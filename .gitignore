@@ -1,7 +1,5 @@
 .DS_Store
 *.*~
 *~
-lib/
 dist/
-bower_components/
 node_modules/
