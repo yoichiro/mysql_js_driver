@@ -97,7 +97,7 @@ MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
 
 ```javascript
 MySQL.client.logout(function(result) {
-  // do somethind...
+  // do something...
 });
 ```
 
