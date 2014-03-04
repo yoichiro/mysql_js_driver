@@ -11,20 +11,20 @@ How to use
 
 (1) Load this library with a script tag like the following:
 
-```
+```html
 <script type="text/javascript" src="mysql_js_driver_[VERSION_NUMBER].min.js"></script>
 ```
 
 (2) Set an implementation object to communicate with a socket like the following:
 
-```
+```javascript
 // Socket communication with Chrome Socket API
 MySQL.communication.setSocketImpl(new MySQL.ChromeSocket());
 ```
 
 (3) Connect and login to MySQL server
 
-```
+```javascript
 MySQL.client.login(
   "YOUR_MYSQL_HOSTNAME", "YOUR_MYSQL_PORT_NUMBER",
   "YOUR_USERNAME", "YOUR_PASSWORD",
@@ -46,7 +46,7 @@ MySQL.client.login(
 
 (4) Execute query (if the result set is returned)
 
-```
+```javascript
 var query = "SELECT * FROM foo WHERE...";
 MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
   for (var i = 0; i < columnDefinitions.length; i++) {
@@ -77,7 +77,7 @@ MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
 
 (5) Execute query (if the result set is not returned)
 
-```
+```javascript
 var query = "UPDATE foo SET bar = baz WHERE ...";
 MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
   // Never called.
@@ -95,7 +95,7 @@ MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
 
 (6) Logout from MySQL server
 
-```
+```javascript
 MySQL.client.logout(function(result) {
   // do somethind...
 });
