@@ -4,22 +4,8 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON("package.json"),
         clean: {
             all: [
-                "dist",
-                "lib",
-                "bower_components"
+                "dist"
             ]
-        },
-        bower: {
-            install: {
-                options: {
-                    targetDir: './lib',
-                    layout: 'byType',
-                    install: true,
-                    verbose: false,
-                    cleanTargetDir: true,
-                    cleanBowerDir: false
-                }
-            }
         },
         jasmine: {
             all: {
@@ -27,7 +13,6 @@ module.exports = function(grunt) {
                 options: {
                     specs: "spec/*_spec.js",
                     helpers: ["spec/*_helper.js",
-                              "lib/jquery/jquery.js",
                               "deps/*.js"]
                 }
             }
@@ -77,8 +62,7 @@ module.exports = function(grunt) {
                 files: [{
                     expand: true,
                     flatten: true,
-                    src: ["lib/jquery/jquery.js",
-                          "deps/encoding.js",
+                    src: ["deps/encoding.js",
                           "deps/encoding-indexes.js",
                           "deps/sha1.js"],
                     dest: "dist/lib/",
@@ -99,7 +83,6 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.loadNpmTasks("grunt-bower-task");
     grunt.loadNpmTasks("grunt-contrib-concat");
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks("grunt-contrib-jasmine");
@@ -108,8 +91,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-jshint");
 
-    grunt.registerTask("default", ["bower:install",
-                                   "concat",
+    grunt.registerTask("default", ["concat",
                                    "uglify",
                                    "jasmine",
                                    "copy"]);
