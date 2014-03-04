@@ -1,0 +1,19 @@
+{
+  "name": "mysql_js_driver",
+  "version": "1.0.0",
+  "authors": [
+    "Yoichiro Tanaka"
+  ],
+  "description": "This project provides you MySQL Driver written by JavaScript.",
+  "license": "Apache License 2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "jquery": "~2.1.0"
+  }
+}
