@@ -44,7 +44,8 @@ module.exports = function(grunt) {
                     "src/mysql_models.js",
                     "src/mysql_protocol.js",
                     "src/mysql_communication.js",
-                    "src/mysql_client.js"
+                    "src/mysql_client.js",
+                    "src/chrome_socket.js"
                 ],
                 dest: "dist/<%= pkg.name %>_<%= pkg.version %>.js"
             }
@@ -65,7 +66,8 @@ module.exports = function(grunt) {
                     "src/mysql_models.js",
                     "src/mysql_protocol.js",
                     "src/mysql_communication.js",
-                    "src/mysql_client.js"
+                    "src/mysql_client.js",
+                    "src/chrome_socket.js"
                 ],
                 dest: "dist/<%= pkg.name %>_<%= pkg.version %>.min.js"
             }
