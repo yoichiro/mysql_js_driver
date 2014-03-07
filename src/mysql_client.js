@@ -1,4 +1,4 @@
-(function(mySQLCommunication, mySQLProtocol) {
+(function(mySQLCommunication, mySQLProtocol, networkErrorCode) {
     "use strict";
 
     // Constructor
