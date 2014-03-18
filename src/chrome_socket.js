@@ -9,10 +9,16 @@
     // Public methods
 
     ChromeSocket.prototype.connect = function(host, port, callback) {
+        var id = null;
         chrome.socket.create("tcp", {}, function(createInfo) {
-            this.socketId = createInfo.socketId;
+            id = createInfo.socketId;
             chrome.socket.connect(
                 this.socketId, host, port, function(result) {
+                    if (result >= 0) {
+                        this.socketId = id;
+                    } else {
+                        this.socketId = null;
+                    }
                     callback(result);
                 }.bind(this));
         }.bind(this));
