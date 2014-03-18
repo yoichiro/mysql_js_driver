@@ -13,7 +13,7 @@
         chrome.socket.create("tcp", {}, function(createInfo) {
             id = createInfo.socketId;
             chrome.socket.connect(
-                this.socketId, host, port, function(result) {
+                id, host, port, function(result) {
                     if (result >= 0) {
                         this.socketId = id;
                     } else {
