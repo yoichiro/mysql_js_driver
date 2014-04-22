@@ -92,8 +92,13 @@
         var characterSet =
                 mySQLTypes.createLengthEncodedInteger(0x21); // utf8_general_ci
         var usernameArray = mySQLTypes.createNullEndString(username);
-        var passwordHashLength =
+        var passwordHashLength;
+        if (passwordHash === null) {
+            passwordHashLength = 0;
+        } else {
+            passwordHashLength =
                 mySQLTypes.createLengthEncodedInteger(passwordHash.length);
+        }
         var authPluginName =
                 mySQLTypes.createNullEndString(initialHandshakeRequest.authPluginName);
         var length =
@@ -102,9 +107,12 @@
                 characterSet.length +
                 23 +
                 usernameArray.length +
-                passwordHashLength.length +
-                passwordHash.length +
                 authPluginName.length;
+        if (passwordHash === null) {
+            length += 1;
+        } else {
+            length += passwordHashLength.length + passwordHash.length;
+        }
         var buffer = new ArrayBuffer(length);
         var array = new Uint8Array(buffer);
         var offset = 0;
@@ -117,10 +125,15 @@
         offset += 23;
         array.set(usernameArray, offset);
         offset += usernameArray.length;
-        array.set(passwordHashLength, offset);
-        offset += passwordHashLength.length;
-        array.set(passwordHash, offset);
-        offset += passwordHash.length;
+        if (passwordHash === null) {
+            array.set([0], offset);
+            offset += 1;
+        } else {
+            array.set(passwordHashLength, offset);
+            offset += passwordHashLength.length;
+            array.set(passwordHash, offset);
+            offset += passwordHash.length;
+        }
         array.set(authPluginName, offset);
         return array;
     };
