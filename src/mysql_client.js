@@ -12,9 +12,14 @@
         mySQLCommunication.readPacket(function(packet) {
             var initialHandshakeRequest =
                     mySQLProtocol.parseInitialHandshakePacket(packet);
-            var passwordHash =
+            var passwordHash;
+            if (password) {
+                passwordHash =
                     mySQLProtocol.generatePasswordHash(
                         initialHandshakeRequest, password);
+            } else {
+                passwordHash = null;
+            }
             var handshakeResponse =
                     mySQLProtocol.generateHandshakeResponse(
                         initialHandshakeRequest, username, passwordHash);

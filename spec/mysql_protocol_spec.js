@@ -55,6 +55,25 @@ describe("MySQL.protocol", function() {
         }
     });
 
+    it ("can generate handshake response with no password", function() {
+        var initialHandshakeRequest = {
+            authPluginName: "CBA"
+        };
+        var username = "ABC";
+        var passwordHash = null;
+        var actual = target.generateHandshakeResponse(
+            initialHandshakeRequest, username, passwordHash);
+        var expected =
+                [0x01, 0x82, 0x08, 0, 0xFF, 0xFF, 0xFF, 0, 0x21, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0x41, 0x42, 0x43, 0, 0,
+                 0x43, 0x42, 0x41, 0];
+        for (var i = 0; i < actual.length; i++) {
+            expect(expected[i]).toEqual(actual[i]);
+        }
+    });
+
     it ("can generate password hash", function() {
         var password = "pass";
         var initialHandshakeRequest = {
