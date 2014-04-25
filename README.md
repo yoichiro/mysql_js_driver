@@ -18,8 +18,8 @@ How to use
 (2) Set an implementation object to communicate with a socket like the following:
 
 ```javascript
-// Socket communication with Chrome Socket API
-MySQL.communication.setSocketImpl(new MySQL.ChromeSocket());
+// Socket communication with Chrome Socket API (chrome.sockets.top)
+MySQL.communication.setSocketImpl(new MySQL.ChromeSocket2());
 ```
 
 (3) Connect and login to MySQL server

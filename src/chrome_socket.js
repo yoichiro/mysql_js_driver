@@ -3,6 +3,7 @@
     // Constructor
 
     var ChromeSocket = function() {
+        console.log("Deprecated: You should use MySQL.ChromeSocket2.");
         this.socketId = null;
     };
 
