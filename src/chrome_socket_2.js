@@ -47,13 +47,7 @@
     ChromeSocket2.prototype.fetch = function() {
         if (this.callbacks.length > 0) {
             var data = this.callbacks[0];
-            if (this.buffer.byteLength < data.length) {
-                console.log("There is no data: " + this.buffer.byteLength + "<" + data.length);
-                // There is no data
-                data.fatalCallback("There is no data: " + this.buffer.byteLength + "<" + data.length);
-                // Delete callback info
-                this.callbacks = this.callbacks.slice(1);
-            } else {
+            if (this.buffer.byteLength >= data.length) {
                 // Fetch result buffer
                 var resultBuffer = new ArrayBuffer(data.length);
                 var resultBufferArray = new Uint8Array(resultBuffer, 0, resultBuffer.byteLength);
@@ -72,9 +66,9 @@
                     data: resultBuffer
                 };
                 data.callback(result);
+                // Recursible
+                this.fetch();
             }
-            // Recursible
-            this.fetch();
         }
     };
 
@@ -106,6 +100,8 @@
             chrome.sockets.tcp.close(this.socketId);
         }
         this.socketId = null;
+        this.callbacks = [];
+        this.buffer = new ArrayBuffer(0);
         if (callback) {
             callback();
         }
