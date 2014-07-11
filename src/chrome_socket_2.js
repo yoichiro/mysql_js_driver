@@ -13,10 +13,14 @@
 
     ChromeSocket2.prototype.initialize = function() {
         chrome.sockets.tcp.onReceive.addListener(function(info) {
-            this.onReceive(info);
+            if (this.socketId === info.socketId) {
+                this.onReceive(info);
+            }
         }.bind(this));
         chrome.sockets.tcp.onReceiveError.addListener(function(info) {
-            this.onReceiveError(info);
+            if (this.socketId === info.socketId) {
+                this.onReceiveError(info);
+            }
         }.bind(this));
     };
 
