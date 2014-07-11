@@ -1,6 +1,6 @@
 {
   "name": "mysql_js_driver",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "This project provides you MySQL Driver written by JavaScript.",
   "main": "Gruntfile.js",
   "scripts": {
