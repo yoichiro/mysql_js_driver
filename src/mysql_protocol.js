@@ -160,6 +160,12 @@
         return result;
     };
 
+    Protocol.prototype.generatePingRequest = function() {
+        var array = binaryUtils.createUint8Array(1);
+        array[0] = 0x0e;
+        return array;
+    };
+
     Protocol.prototype.parseQueryResultPacket = function(packet, callback) {
         var data = packet.data;
         var header = mySQLTypes.getFixedLengthInteger(data, 0, 1);

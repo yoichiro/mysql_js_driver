@@ -92,6 +92,14 @@ describe("MySQL.protocol", function() {
         }
     });
 
+    it ("can generate ping request", function() {
+        var actual = target.generatePingRequest();
+        var expected = [0x0e];
+        for (var i = 0; i < actual.length; i++) {
+            expect(expected[i]).toEqual(actual[i]);
+        }
+    });
+
     it ("can parse query result packet (OkResult)", function() {
         var data = [0, 0x05, 0x06, 0x34, 0x12,
                     0x78, 0x56, 0x41, 0x42, 0x43];
