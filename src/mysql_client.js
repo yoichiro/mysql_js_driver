@@ -177,6 +177,22 @@
         }.bind(this), fatalCallback);
     };
 
+    Client.prototype.ping = function(callback, fatalCallback) {
+        if (!mySQLCommunication.isConnected()) {
+            fatalCallback("Not connected.");
+            return;
+        }
+        mySQLCommunication.resetSequenceNumber();
+        var pingRequest = mySQLProtocol.generatePingRequest();
+        var pingPacket = mySQLCommunication.createPacket(pingRequest);
+        mySQLCommunication.writePacket(pingPacket, function(writeInfo) {
+            mySQLCommunication.readPacket(function(packet) {
+                var result = mySQLProtocol.parseOkErrResultPacket(packet);
+                callback(result);
+            }.bind(this), fatalCallback);
+        }.bind(this), fatalCallback);
+    };
+
     // Export
 
     MySQL.client = new Client();
