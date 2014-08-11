@@ -66,7 +66,8 @@ module.exports = function(grunt) {
                     flatten: true,
                     src: ["deps/encoding.js",
                           "deps/encoding-indexes.js",
-                          "deps/sha1.js"],
+                          "deps/sha1.js",
+                          "deps/forge.min.js"],
                     dest: "dist/lib/",
                     filter: "isFile"
                 }]

@@ -12,24 +12,49 @@
         mySQLCommunication.readPacket(function(packet) {
             var initialHandshakeRequest =
                     mySQLProtocol.parseInitialHandshakePacket(packet);
-            var passwordHash;
-            if (password) {
-                passwordHash =
-                    mySQLProtocol.generatePasswordHash(
-                        initialHandshakeRequest, password);
-            } else {
-                passwordHash = null;
-            }
-            var handshakeResponse =
-                    mySQLProtocol.generateHandshakeResponse(
-                        initialHandshakeRequest, username, passwordHash);
-            var handshakeResponsePacket =
-                    mySQLCommunication.createPacket(handshakeResponse.buffer);
-            mySQLCommunication.writePacket(
-                handshakeResponsePacket, function(writeInfo) {
-                mySQLCommunication.readPacket(function(packet) {
-                    var result = mySQLProtocol.parseOkErrResultPacket(packet);
-                    callback(initialHandshakeRequest, result);
+            _sendHandshakeResponse.call(
+                this, initialHandshakeRequest, username, password,
+                callback, fatalCallback);
+        }.bind(this), fatalCallback);
+    };
+
+    var _sendHandshakeResponse = function(initialHandshakeRequest, username, password, callback, fatalCallback) {
+        var passwordHash;
+        if (password) {
+            passwordHash =
+                mySQLProtocol.generatePasswordHash(
+                    initialHandshakeRequest, password);
+        } else {
+            passwordHash = null;
+        }
+        var handshakeResponse =
+                mySQLProtocol.generateHandshakeResponse(
+                    initialHandshakeRequest, username, passwordHash);
+        var handshakeResponsePacket =
+                mySQLCommunication.createPacket(handshakeResponse.buffer);
+        mySQLCommunication.writePacket(handshakeResponsePacket, function(writeInfo) {
+            mySQLCommunication.readPacket(function(packet) {
+                var result = mySQLProtocol.parseOkErrResultPacket(packet);
+                callback(initialHandshakeRequest, result);
+            }.bind(this), fatalCallback);
+        }.bind(this), fatalCallback);
+    };
+
+    var _handshakeWithSSL = function(ca, username, password, callback, fatalCallback) {
+        mySQLCommunication.readPacket(function(packet) {
+            var initialHandshakeRequest =
+                    mySQLProtocol.parseInitialHandshakePacket(packet);
+            var connectWithSSLRequest =
+                    mySQLProtocol.generateSSLRequest(initialHandshakeRequest);
+            var connectWithSSLRequestPacket =
+                    mySQLCommunication.createPacket(connectWithSSLRequest.buffer);
+            mySQLCommunication.writePacket(connectWithSSLRequestPacket, function(writeInfo) {
+                mySQLCommunication.establishTls(ca, function() {
+                    mySQLCommunication.incrementSequenceNumber(
+                        connectWithSSLRequestPacket.sequenceNumber);
+                    _sendHandshakeResponse.call(
+                        this, initialHandshakeRequest, username, password,
+                        callback, fatalCallback);
                 }.bind(this), fatalCallback);
             }.bind(this), fatalCallback);
         }.bind(this), fatalCallback);
@@ -103,6 +128,18 @@
         mySQLCommunication.connect(host, port, function(result) {
             if (result >= 0) {
                 _handshake.call(this, username, password, callback, fatalCallback);
+            } else {
+                errorCallback(result + "(" +
+                              networkErrorCode.getErrorMessage(result) + ")");
+            }
+        }.bind(this));
+    };
+
+    Client.prototype.loginWithSSL = function(host, port, username, password, ca,
+                                             callback, errorCallback, fatalCallback) {
+        mySQLCommunication.connect(host, port, function(result) {
+            if (result >= 0) {
+                _handshakeWithSSL.call(this, ca, username, password, callback, fatalCallback);
             } else {
                 errorCallback(result + "(" +
                               networkErrorCode.getErrorMessage(result) + ")");

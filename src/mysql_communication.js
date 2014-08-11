@@ -89,6 +89,10 @@
         this.nextSequenceNumber = 0;
     };
 
+    Communication.prototype.establishTls = function(ca, callback, fatalCallback) {
+        this.socketImpl.establishTls(ca, callback, fatalCallback);
+    };
+
     // Export
 
     MySQL.communication = new Communication();

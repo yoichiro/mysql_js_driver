@@ -157,4 +157,15 @@ describe("MySQL.communication", function() {
         expect(0).toEqual(target.nextSequenceNumber);
     });
 
+    it("can establish TLS", function() {
+        var socketImpl = {
+            establishTls: function(ca, callback, fatalCallback) {
+                expect("ca1").toEqual(ca);
+                callback();
+            }
+        };
+        target.setSocketImpl(socketImpl);
+        target.establishTls("ca1", function() {}, function() {});
+    });
+
 });

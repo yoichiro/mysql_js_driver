@@ -281,4 +281,17 @@ describe("MySQL.protocol", function() {
         });
     });
 
+    it ("can generate SSL request", function() {
+        var initialHandshakeRequest = {};
+        var actual = target.generateSSLRequest(initialHandshakeRequest);
+        var expected =
+                [0x01, 0x8A, 0x08, 0, 0xFF, 0xFF, 0xFF, 0, 0x21,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0];
+        for (var i = 0; i < actual.length; i++) {
+            expect(expected[i]).toEqual(actual[i]);
+        }
+    });
+
 });
