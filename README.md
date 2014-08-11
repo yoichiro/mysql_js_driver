@@ -18,16 +18,40 @@ How to use
 (2) Set an implementation object to communicate with a socket like the following:
 
 ```javascript
-// Socket communication with Chrome Socket API (chrome.sockets.top)
+// Socket communication with Chrome Socket API (chrome.sockets.tcp)
 MySQL.communication.setSocketImpl(new MySQL.ChromeSocket2());
 ```
 
-(3) Connect and login to MySQL server
+(3-1) Connect and login to MySQL server
 
 ```javascript
 MySQL.client.login(
   "YOUR_MYSQL_HOSTNAME", "YOUR_MYSQL_PORT_NUMBER",
   "YOUR_USERNAME", "YOUR_PASSWORD",
+  function(initialHandshakeRequest, result) {
+    if (result.isSuccess()) {
+      var serverVersion = initialHandshakeRequest.serverVersion;
+      var protocolVersion = initialHandshakeRequest.protocolVersion;
+      // do something...
+    } else {
+      var errorMessage = result.errorMessage;
+      // do something...
+    }
+  }, function(errorCode) { // Error returned from MySQL server
+    // do something...
+  }, function(result) { // Cannot connect to MySQL server
+    // do something...
+  });
+```
+
+(3-2) Connect and login to MySQL server with SSL
+
+```javascript
+var ca = ...; // CA Certificate string in PEM format
+MySQL.client.loginWithSSL(
+  "YOUR_MYSQL_HOSTNAME", "YOUR_MYSQL_PORT_NUMBER",
+  "YOUR_USERNAME", "YOUR_PASSWORD",
+  ca,
   function(initialHandshakeRequest, result) {
     if (result.isSuccess()) {
       var serverVersion = initialHandshakeRequest.serverVersion;
@@ -116,3 +140,4 @@ Dependent libraries
 
 * [encoding.js](http://code.google.com/p/stringencoding/)
 * [crypto-js](https://code.google.com/p/crypto-js/)
+* [Forge](https://github.com/digitalbazaar/forge)
