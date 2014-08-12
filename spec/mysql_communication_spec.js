@@ -159,13 +159,14 @@ describe("MySQL.communication", function() {
 
     it("can establish TLS", function() {
         var socketImpl = {
-            establishTls: function(ca, callback, fatalCallback) {
+            establishTls: function(ca, checkCN, callback, fatalCallback) {
                 expect("ca1").toEqual(ca);
+                expect(true).toEqual(checkCN);
                 callback();
             }
         };
         target.setSocketImpl(socketImpl);
-        target.establishTls("ca1", function() {}, function() {});
+        target.establishTls("ca1", true, function() {}, function() {});
     });
 
 });

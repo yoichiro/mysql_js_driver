@@ -10,6 +10,7 @@
         _resetTls.call(this);
         this.host = null;
         this.ca = null;
+        this.checkCommonName = false;
     };
 
     // Private methods
@@ -239,8 +240,9 @@
         });
     };
 
-    ChromeSocket2.prototype.establishTls = function(ca, callback, fatalCallback) {
+    ChromeSocket2.prototype.establishTls = function(ca, checkCN, callback, fatalCallback) {
         this.ca = ca;
+        this.checkCommonName = checkCN;
         _initializeTls.call(this, callback, fatalCallback);
         chrome.sockets.tcp.setPaused(this.socketId, true, function() {
             this.tls.handshake();
@@ -260,7 +262,10 @@
         }
         var caObj = forge.pki.certificateFromPem(this.ca);
         if (!_verifyCertificate.call(this, caObj, this.host)) {
-            return caObj.verify(certs[0]);
+            return false;
+        }
+        if (caObj.verify(certs[0])) {
+            return true;
         }
         var fingerprint1 = forge.pki.getPublicKeyFingerprint(caObj.publicKey, {
             encoding: 'hex'
@@ -299,8 +304,12 @@
     };
 
     var _matchHost = function(pattern, host) {
-        var regexp = new RegExp(pattern.value.replace(/\./g, "\\.").replace(/\*/g, ".*"), "i");
-        return regexp.test(host);
+        if (this.checkCommonName) {
+            var regexp = new RegExp(pattern.value.replace(/\./g, "\\.").replace(/\*/g, ".*"), "i");
+            return regexp.test(host);
+        } else {
+            return true;
+        }
     };
 
     var _initializeTls = function(callback, fatalCallback) {

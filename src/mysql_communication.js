@@ -89,8 +89,8 @@
         this.nextSequenceNumber = 0;
     };
 
-    Communication.prototype.establishTls = function(ca, callback, fatalCallback) {
-        this.socketImpl.establishTls(ca, callback, fatalCallback);
+    Communication.prototype.establishTls = function(ca, checkCN, callback, fatalCallback) {
+        this.socketImpl.establishTls(ca, checkCN, callback, fatalCallback);
     };
 
     // Export
