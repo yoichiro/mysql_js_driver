@@ -51,7 +51,7 @@ var ca = ...; // CA Certificate string in PEM format
 MySQL.client.loginWithSSL(
   "YOUR_MYSQL_HOSTNAME", "YOUR_MYSQL_PORT_NUMBER",
   "YOUR_USERNAME", "YOUR_PASSWORD",
-  ca,
+  ca, true, // true means to check whether CN === host name.
   function(initialHandshakeRequest, result) {
     if (result.isSuccess()) {
       var serverVersion = initialHandshakeRequest.serverVersion;
