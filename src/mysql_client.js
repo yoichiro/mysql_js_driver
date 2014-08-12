@@ -40,7 +40,7 @@
         }.bind(this), fatalCallback);
     };
 
-    var _handshakeWithSSL = function(ca, username, password, callback, fatalCallback) {
+    var _handshakeWithSSL = function(ca, checkCN, username, password, callback, fatalCallback) {
         mySQLCommunication.readPacket(function(packet) {
             var initialHandshakeRequest =
                     mySQLProtocol.parseInitialHandshakePacket(packet);
@@ -49,7 +49,7 @@
             var connectWithSSLRequestPacket =
                     mySQLCommunication.createPacket(connectWithSSLRequest.buffer);
             mySQLCommunication.writePacket(connectWithSSLRequestPacket, function(writeInfo) {
-                mySQLCommunication.establishTls(ca, function() {
+                mySQLCommunication.establishTls(ca, checkCN, function() {
                     mySQLCommunication.incrementSequenceNumber(
                         connectWithSSLRequestPacket.sequenceNumber);
                     _sendHandshakeResponse.call(
@@ -135,11 +135,12 @@
         }.bind(this));
     };
 
-    Client.prototype.loginWithSSL = function(host, port, username, password, ca,
+    Client.prototype.loginWithSSL = function(host, port, username, password,
+                                             ca, checkCN,
                                              callback, errorCallback, fatalCallback) {
         mySQLCommunication.connect(host, port, function(result) {
             if (result >= 0) {
-                _handshakeWithSSL.call(this, ca, username, password, callback, fatalCallback);
+                _handshakeWithSSL.call(this, ca, checkCN, username, password, callback, fatalCallback);
             } else {
                 errorCallback(result + "(" +
                               networkErrorCode.getErrorMessage(result) + ")");
