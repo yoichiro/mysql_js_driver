@@ -43,7 +43,7 @@ describe("MySQL.protocol", function() {
         passwordHash[3] = 0x44;
         passwordHash[4] = 0x45;
         var actual = target.generateHandshakeResponse(
-            initialHandshakeRequest, username, passwordHash);
+            initialHandshakeRequest, username, passwordHash, false);
         var expected =
                 [0x01, 0x82, 0x08, 0, 0xFF, 0xFF, 0xFF, 0, 0x21, 0,
                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -62,13 +62,38 @@ describe("MySQL.protocol", function() {
         var username = "ABC";
         var passwordHash = null;
         var actual = target.generateHandshakeResponse(
-            initialHandshakeRequest, username, passwordHash);
+            initialHandshakeRequest, username, passwordHash, false);
         var expected =
                 [0x01, 0x82, 0x08, 0, 0xFF, 0xFF, 0xFF, 0, 0x21, 0,
                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                  0, 0, 0x41, 0x42, 0x43, 0, 0,
                  0x43, 0x42, 0x41, 0];
+        for (var i = 0; i < actual.length; i++) {
+            expect(expected[i]).toEqual(actual[i]);
+        }
+    });
+
+    it ("can generate handshake response with multi-statements", function() {
+        var initialHandshakeRequest = {
+            authPluginName: "CBA"
+        };
+        var username = "ABC";
+        var passwordHashBuffer = new ArrayBuffer(5);
+        var passwordHash = new Uint8Array(passwordHashBuffer);
+        passwordHash[0] = 0x41;
+        passwordHash[1] = 0x42;
+        passwordHash[2] = 0x43;
+        passwordHash[3] = 0x44;
+        passwordHash[4] = 0x45;
+        var actual = target.generateHandshakeResponse(
+            initialHandshakeRequest, username, passwordHash, true);
+        var expected =
+                [0x01, 0x82, 0x0B, 0, 0xFF, 0xFF, 0xFF, 0, 0x21, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0x41, 0x42, 0x43, 0, 0x05, 0x41, 0x42, 0x43,
+                 0x44, 0x45, 0x43, 0x42, 0x41, 0];
         for (var i = 0; i < actual.length; i++) {
             expect(expected[i]).toEqual(actual[i]);
         }
@@ -283,9 +308,22 @@ describe("MySQL.protocol", function() {
 
     it ("can generate SSL request", function() {
         var initialHandshakeRequest = {};
-        var actual = target.generateSSLRequest(initialHandshakeRequest);
+        var actual = target.generateSSLRequest(initialHandshakeRequest, false);
         var expected =
                 [0x01, 0x8A, 0x08, 0, 0xFF, 0xFF, 0xFF, 0, 0x21,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                 0, 0, 0];
+        for (var i = 0; i < actual.length; i++) {
+            expect(expected[i]).toEqual(actual[i]);
+        }
+    });
+
+    it ("can generate SSL request with multi-statements", function() {
+        var initialHandshakeRequest = {};
+        var actual = target.generateSSLRequest(initialHandshakeRequest, true);
+        var expected =
+                [0x01, 0x8A, 0x0B, 0, 0xFF, 0xFF, 0xFF, 0, 0x21,
                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                  0, 0, 0];

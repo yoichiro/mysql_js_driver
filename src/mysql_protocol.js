@@ -78,13 +78,17 @@
         return resultArray;
     };
 
-    Protocol.prototype.generateSSLRequest = function(initialHandshakeRequest) {
+    Protocol.prototype.generateSSLRequest = function(initialHandshakeRequest, multiStatements) {
         var capabilityFlagsValue =
                 0x00001 // CLIENT_LONG_PASSWORD
-                | 0x00200 // CLIENT_PROTOCOL_41
-                | 0x00800 // CLIENT_SSL
-                | 0x08000 // CLIENT_SECURE_CONNECTION
-                | 0x80000; // CLIENT_PLUGIN_AUTH
+              | 0x00200 // CLIENT_PROTOCOL_41
+              | 0x00800 // CLIENT_SSL
+              | 0x08000 // CLIENT_SECURE_CONNECTION
+              | 0x80000; // CLIENT_PLUGIN_AUTH
+        if (multiStatements) {
+            capabilityFlagsValue |= 0x10000; // CLIENT_MULTI_STATEMENTS
+            capabilityFlagsValue |= 0x20000; // CLIENT_MULTI_RESULTS
+        }
         var capabilityFlags =
                 mySQLTypes.createFixedLengthInteger(capabilityFlagsValue, 4);
         var maxPacketSize =
@@ -108,12 +112,16 @@
     };
 
     Protocol.prototype.generateHandshakeResponse = function(
-        initialHandshakeRequest, username, passwordHash) {
+        initialHandshakeRequest, username, passwordHash, multiStatements) {
         var capabilityFlagsValue =
                 0x00001 // CLIENT_LONG_PASSWORD
-                | 0x00200 // CLIENT_PROTOCOL_41
-                | 0x08000 // CLIENT_SECURE_CONNECTION
-                | 0x80000; // CLIENT_PLUGIN_AUTH
+              | 0x00200 // CLIENT_PROTOCOL_41
+              | 0x08000 // CLIENT_SECURE_CONNECTION
+              | 0x80000; // CLIENT_PLUGIN_AUTH
+        if (multiStatements) {
+            capabilityFlagsValue |= 0x10000; // CLIENT_MULTI_STATEMENTS
+            capabilityFlagsValue |= 0x20000; // CLIENT_MULTI_RESULTS
+        }
         var capabilityFlags =
                 mySQLTypes.createFixedLengthInteger(capabilityFlagsValue, 4);
         var maxPacketSize =
