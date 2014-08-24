@@ -8,17 +8,17 @@
 
     // Private methods
 
-    var _handshake = function(username, password, callback, fatalCallback) {
+    var _handshake = function(username, password, multiStatements, callback, fatalCallback) {
         mySQLCommunication.readPacket(function(packet) {
             var initialHandshakeRequest =
                     mySQLProtocol.parseInitialHandshakePacket(packet);
             _sendHandshakeResponse.call(
-                this, initialHandshakeRequest, username, password,
+                this, initialHandshakeRequest, username, password, multiStatements,
                 callback, fatalCallback);
         }.bind(this), fatalCallback);
     };
 
-    var _sendHandshakeResponse = function(initialHandshakeRequest, username, password, callback, fatalCallback) {
+    var _sendHandshakeResponse = function(initialHandshakeRequest, username, password, multiStatements, callback, fatalCallback) {
         var passwordHash;
         if (password) {
             passwordHash =
@@ -29,7 +29,7 @@
         }
         var handshakeResponse =
                 mySQLProtocol.generateHandshakeResponse(
-                    initialHandshakeRequest, username, passwordHash);
+                    initialHandshakeRequest, username, passwordHash, multiStatements);
         var handshakeResponsePacket =
                 mySQLCommunication.createPacket(handshakeResponse.buffer);
         mySQLCommunication.writePacket(handshakeResponsePacket, function(writeInfo) {
@@ -40,12 +40,12 @@
         }.bind(this), fatalCallback);
     };
 
-    var _handshakeWithSSL = function(ca, checkCN, username, password, callback, fatalCallback) {
+    var _handshakeWithSSL = function(ca, checkCN, username, password, multiStatements, callback, fatalCallback) {
         mySQLCommunication.readPacket(function(packet) {
             var initialHandshakeRequest =
                     mySQLProtocol.parseInitialHandshakePacket(packet);
             var connectWithSSLRequest =
-                    mySQLProtocol.generateSSLRequest(initialHandshakeRequest);
+                    mySQLProtocol.generateSSLRequest(initialHandshakeRequest, multiStatements);
             var connectWithSSLRequestPacket =
                     mySQLCommunication.createPacket(connectWithSSLRequest.buffer);
             mySQLCommunication.writePacket(connectWithSSLRequestPacket, function(writeInfo) {
@@ -53,7 +53,7 @@
                     mySQLCommunication.incrementSequenceNumber(
                         connectWithSSLRequestPacket.sequenceNumber);
                     _sendHandshakeResponse.call(
-                        this, initialHandshakeRequest, username, password,
+                        this, initialHandshakeRequest, username, password, multiStatements,
                         callback, fatalCallback);
                 }.bind(this), fatalCallback);
             }.bind(this), fatalCallback);
@@ -64,7 +64,7 @@
         mySQLCommunication.readPacket(function(packet) {
             var eofResult = mySQLProtocol.parseEofPacket(packet);
             if (eofResult) {
-                callback(result);
+                callback(result, eofResult);
             } else {
                 var row = mySQLProtocol.parseResultsetRowPacket(packet);
                 result.push(row);
@@ -85,8 +85,8 @@
             }
             mySQLCommunication.readPacket(function(packet) {
                 mySQLProtocol.parseEofPacket(packet);
-                _readResultsetRows.call(this, [], function(resultsetRows) {
-                    resultsetCallback(columnDefinitions, resultsetRows);
+                _readResultsetRows.call(this, [], function(resultsetRows, eofResult) {
+                    resultsetCallback(columnDefinitions, resultsetRows, eofResult);
                 }.bind(this), fatalCallback);
             }.bind(this), fatalCallback);
         }.bind(this), fatalCallback);
@@ -123,11 +123,11 @@
 
     // Public methods
 
-    Client.prototype.login = function(host, port, username, password,
+    Client.prototype.login = function(host, port, username, password, multiStatements,
                                       callback, errorCallback, fatalCallback) {
         mySQLCommunication.connect(host, port, function(result) {
             if (result >= 0) {
-                _handshake.call(this, username, password, callback, fatalCallback);
+                _handshake.call(this, username, password, multiStatements, callback, fatalCallback);
             } else {
                 errorCallback(result + "(" +
                               networkErrorCode.getErrorMessage(result) + ")");
@@ -135,12 +135,12 @@
         }.bind(this));
     };
 
-    Client.prototype.loginWithSSL = function(host, port, username, password,
+    Client.prototype.loginWithSSL = function(host, port, username, password, multiStatements,
                                              ca, checkCN,
                                              callback, errorCallback, fatalCallback) {
         mySQLCommunication.connect(host, port, function(result) {
             if (result >= 0) {
-                _handshakeWithSSL.call(this, ca, checkCN, username, password, callback, fatalCallback);
+                _handshakeWithSSL.call(this, ca, checkCN, username, password, multiStatements, callback, fatalCallback);
             } else {
                 errorCallback(result + "(" +
                               networkErrorCode.getErrorMessage(result) + ")");
@@ -163,6 +163,18 @@
         _sendQueryRequest.call(this,
                                queryString, resultsetCallback, noResultsetCallback,
                                errorCallback, fatalCallback);
+    };
+
+    Client.prototype.getNextQueryResult = function(resultsetCallback,
+                                                     noResultsetCallback,
+                                                     errorCallback, fatalCallback) {
+        if (!mySQLCommunication.isConnected()) {
+            fatalCallback("Not connected.");
+            return;
+        }
+        _readQueryResult.call(this,
+                              resultsetCallback, noResultsetCallback,
+                              errorCallback, fatalCallback);
     };
 
     Client.prototype.getDatabases = function(callback, errorCallback, fatalCallback) {

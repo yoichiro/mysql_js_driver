@@ -65,6 +65,32 @@
 
     // Constructor
 
+    var StatusFlags = {
+        SERVER_STATUS_IN_TRANS: 0x0001,
+        SERVER_STATUS_AUTOCOMMIT: 0x0002,
+        SERVER_MORE_RESULTS_EXISTS: 0x0008,
+        SERVER_STATUS_NO_GOOD_INDEX_USED: 0x0010,
+        SERVER_STATUS_NO_INDEX_USED: 0x0020,
+        SERVER_STATUS_CURSOR_EXISTS: 0x0040,
+        SERVER_STATUS_LAST_ROW_SENT: 0x0080,
+        SERVER_STATUS_DB_DROPPED: 0x0100,
+        SERVER_STATUS_NO_BACKSLASH_ESCAPES: 0x0200,
+        SERVER_STATUS_METADATA_CHANGED: 0x0400,
+        SERVER_QUERY_WAS_SLOW: 0x0800,
+        SERVER_PS_OUT_PARAMS: 0x1000
+    };
+
+    // Export
+
+    MySQL.StatusFlags = StatusFlags;
+
+})();
+
+(function(StatusFlags) {
+    "use strict";
+
+    // Constructor
+
     var OkResult = function(newAffectedRows,
                             newLastInsertId,
                             newStatusFlags,
@@ -87,11 +113,59 @@
         return false;
     };
 
+    OkResult.prototype.isStatusInTrans = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_IN_TRANS) !== 0;
+    };
+
+    OkResult.prototype.isAutoCommit = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_AUTOCOMMIT) !== 0;
+    };
+
+    OkResult.prototype.isMoreResultsExists = function() {
+        return (this.statusFlags & StatusFlags.SERVER_MORE_RESULTS_EXISTS) !== 0;
+    };
+
+    OkResult.prototype.isNoGoodIndexUsed = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_NO_GOOD_INDEX_USED) !== 0;
+    };
+
+    OkResult.prototype.isNoIndexUsed = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_NO_INDEX_USED) !== 0;
+    };
+
+    OkResult.prototype.isCursorExists = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_CURSOR_EXISTS) !== 0;
+    };
+
+    OkResult.prototype.isLastRowSent = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_LAST_ROW_SENT) !== 0;
+    };
+
+    OkResult.prototype.isDbDropped = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_DB_DROPPED) !== 0;
+    };
+
+    OkResult.prototype.isNoBackslashEscapes = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_NO_BACKSLASH_ESCAPES) !== 0;
+    };
+
+    OkResult.prototype.isMetadataChanged = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_METADATA_CHANGED) !== 0;
+    };
+
+    OkResult.prototype.isQueryWasSlow = function() {
+        return (this.statusFlags & StatusFlags.SERVER_QUERY_WAS_SLOW) !== 0;
+    };
+
+    OkResult.prototype.isPsOutParams = function() {
+        return (this.statusFlags & StatusFlags.SERVER_PS_OUT_PARAMS) !== 0;
+    };
+
     // Export
 
     MySQL.OkResult = OkResult;
 
-})();
+})(MySQL.StatusFlags);
 
 (function() {
     "use strict";
@@ -272,7 +346,7 @@
 
 })();
 
-(function() {
+(function(StatusFlags) {
     "use strict";
 
     // Constructor
@@ -282,11 +356,61 @@
         this.statusFlags = newStatusFlags;
     };
 
+    // Public methods
+
+    EofResult.prototype.isStatusInTrans = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_IN_TRANS) !== 0;
+    };
+
+    EofResult.prototype.isAutoCommit = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_AUTOCOMMIT) !== 0;
+    };
+
+    EofResult.prototype.isMoreResultsExists = function() {
+        return (this.statusFlags & StatusFlags.SERVER_MORE_RESULTS_EXISTS) !== 0;
+    };
+
+    EofResult.prototype.isNoGoodIndexUsed = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_NO_GOOD_INDEX_USED) !== 0;
+    };
+
+    EofResult.prototype.isNoIndexUsed = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_NO_INDEX_USED) !== 0;
+    };
+
+    EofResult.prototype.isCursorExists = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_CURSOR_EXISTS) !== 0;
+    };
+
+    EofResult.prototype.isLastRowSent = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_LAST_ROW_SENT) !== 0;
+    };
+
+    EofResult.prototype.isDbDropped = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_DB_DROPPED) !== 0;
+    };
+
+    EofResult.prototype.isNoBackslashEscapes = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_NO_BACKSLASH_ESCAPES) !== 0;
+    };
+
+    EofResult.prototype.isMetadataChanged = function() {
+        return (this.statusFlags & StatusFlags.SERVER_STATUS_METADATA_CHANGED) !== 0;
+    };
+
+    EofResult.prototype.isQueryWasSlow = function() {
+        return (this.statusFlags & StatusFlags.SERVER_QUERY_WAS_SLOW) !== 0;
+    };
+
+    EofResult.prototype.isPsOutParams = function() {
+        return (this.statusFlags & StatusFlags.SERVER_PS_OUT_PARAMS) !== 0;
+    };
+
     // Export
 
     MySQL.EofResult = EofResult;
 
-})();
+})(MySQL.StatusFlags);
 
 (function() {
     "use strict";
