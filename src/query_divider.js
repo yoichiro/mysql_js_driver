@@ -92,7 +92,7 @@
 
     QueryDivider.prototype.evaluate = function(query) {
         var pos = 0;
-        while(query.length !== pos) {
+        while(pos < query.length) {
             var ch = query.charAt(pos);
             var incr = this.currentState(query, ch, pos);
             pos += incr;
