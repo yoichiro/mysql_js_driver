@@ -71,7 +71,7 @@
 
     QueryDivider.prototype.parse = function(query) {
         try {
-            this.evaluate(query, 0);
+            this.evaluate(query);
             _appendBufferToResult.call(this);
             this.result[this.result.length - 1] += this.maybeDelimiterDefBuffer.join("");
             return {
@@ -90,13 +90,13 @@
         }
     };
 
-    QueryDivider.prototype.evaluate = function(query, pos) {
-        if (query.length === pos) {
-            return;
+    QueryDivider.prototype.evaluate = function(query) {
+        var pos = 0;
+        while(query.length !== pos) {
+            var ch = query.charAt(pos);
+            var incr = this.currentState(query, ch, pos);
+            pos += incr;
         }
-        var ch = query.charAt(pos);
-        var incr = this.currentState(query, ch, pos);
-        this.evaluate(query, pos + incr);
     };
 
     QueryDivider.prototype.lineStart = function(query, ch, pos) {
