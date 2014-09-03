@@ -25,4 +25,11 @@ describe("MySQL.QueryDivider", function() {
         expect("#//\n-- //\nd").toEqual(actual.result[2]);
     });
 
+    it("can parse query including a part of delimiter def", function() {
+        var source = "select\n *\n from\n description\n order by abc";
+        var actual = target.parse(source);
+        expect(true).toEqual(actual.success);
+        expect("select\n *\n from\n description\n order by abc").toEqual(actual.result[0]);
+    });
+
 });

@@ -278,6 +278,7 @@
         } else {
             this.buffer = this.buffer.concat(this.maybeDelimiterDefBuffer);
             this.buffer.push(ch);
+            this.maybeDelimiterDefBuffer = [];
             this.currentState = this.stateMap.query;
             return 1;
         }
