@@ -60,15 +60,18 @@
         }.bind(this), fatalCallback);
     };
 
-    var _readResultsetRows = function(result, callback, fatalCallback) {
+    var _readResultsetRows = function(result, callback, errorCallback, fatalCallback) {
         mySQLCommunication.readPacket(function(packet) {
             var eofResult = mySQLProtocol.parseEofPacket(packet);
+            var errResult = mySQLProtocol.parseOkErrResultPacket(packet);
             if (eofResult) {
                 callback(result, eofResult);
+            } else if (errResult) {
+                errorCallback(errResult);
             } else {
                 var row = mySQLProtocol.parseResultsetRowPacket(packet);
                 result.push(row);
-                _readResultsetRows.call(this, result, callback, fatalCallback);
+                _readResultsetRows.call(this, result, callback, errorCallback, fatalCallback);
             }
         }.bind(this), fatalCallback);
     };
@@ -87,7 +90,7 @@
                 mySQLProtocol.parseEofPacket(packet);
                 _readResultsetRows.call(this, [], function(resultsetRows, eofResult) {
                     resultsetCallback(columnDefinitions, resultsetRows, eofResult);
-                }.bind(this), fatalCallback);
+                }.bind(this), errorCallback, fatalCallback);
             }.bind(this), fatalCallback);
         }.bind(this), fatalCallback);
     };
