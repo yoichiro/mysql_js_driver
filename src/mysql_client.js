@@ -66,7 +66,7 @@
             var errResult = mySQLProtocol.parseOkErrResultPacket(packet);
             if (eofResult) {
                 callback(result, eofResult);
-            } else if (errResult) {
+            } else if (errResult && !errResult.isSuccess()) {
                 errorCallback(errResult);
             } else {
                 var row = mySQLProtocol.parseResultsetRowPacket(packet);
