@@ -32,7 +32,8 @@ module.exports = function(grunt) {
                     "src/mysql_client.js",
                     "src/chrome_socket.js",
                     "src/chrome_socket_2.js",
-                    "src/query_divider.js"
+                    "src/query_divider.js",
+                    "src/column_type.js"
                 ],
                 dest: "dist/<%= pkg.name %>_<%= pkg.version %>.js"
             }
@@ -56,7 +57,8 @@ module.exports = function(grunt) {
                     "src/mysql_client.js",
                     "src/chrome_socket.js",
                     "src/chrome_socket_2.js",
-                    "src/query_divider.js"
+                    "src/query_divider.js",
+                    "src/column_type.js"
                 ],
                 dest: "dist/<%= pkg.name %>_<%= pkg.version %>.min.js"
             }
