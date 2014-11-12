@@ -206,6 +206,10 @@
             this.buffer.push(ch);
             this.currentState = this.stateMap.dashComment;
             return 1;
+        } else if (this.maybeDashCommentCount === 1 && ch === '\n') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.lineStart;
+            return 1;
         } else {
             this.buffer.push(ch);
             this.currentState = this.stateMap.query;
