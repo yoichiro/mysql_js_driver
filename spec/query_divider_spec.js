@@ -46,4 +46,12 @@ describe("MySQL.QueryDivider", function() {
         expect("select\n *\n from\n description\n where\n foo = \"a\\\"b\"\"c;d'ef\"").toEqual(actual.result[0]);
     });
 
+    it("can parse query including a comment identifier only line", function() {
+        var source = "--\nDELIMITER ;;\nabc";
+        var actual = target.parse(source);
+        expect(true).toEqual(actual.success);
+        expect("--\n").toEqual(actual.result[0]);
+        expect("abc").toEqual(actual.result[1]);
+    })
+
 });
