@@ -32,4 +32,18 @@ describe("MySQL.QueryDivider", function() {
         expect("select\n *\n from\n description\n order by abc").toEqual(actual.result[0]);
     });
 
+    it("can parse query including a single string leteral", function() {
+        var source = "select\n *\n from\n description\n where\n foo = 'a\\'b''c;d\"ef'";
+        var actual = target.parse(source);
+        expect(true).toEqual(actual.success);
+        expect("select\n *\n from\n description\n where\n foo = 'a\\'b''c;d\"ef'").toEqual(actual.result[0]);
+    });
+
+    it("can parse query including a double string leteral", function() {
+        var source = "select\n *\n from\n description\n where\n foo = \"a\\\"b\"\"c;d'ef\"";
+        var actual = target.parse(source);
+        expect(true).toEqual(actual.success);
+        expect("select\n *\n from\n description\n where\n foo = \"a\\\"b\"\"c;d'ef\"").toEqual(actual.result[0]);
+    });
+
 });
