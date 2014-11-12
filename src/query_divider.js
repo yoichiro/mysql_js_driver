@@ -39,7 +39,13 @@
             maybeDelimiterDef: this.maybeDelimiterDef.bind(this),
             delimiterDef: this.delimiterDef.bind(this),
             delimiterDefEnd: this.delimiterDefEnd.bind(this),
-            maybeDelimiter: this.maybeDelimiter.bind(this)
+            maybeDelimiter: this.maybeDelimiter.bind(this),
+            singleStringLeteral: this.singleStringLeteral.bind(this),
+            escapedSingleStringLeteral: this.escapedSingleStringLeteral.bind(this),
+            maybeSingleStringLeteralEnd: this.maybeSingleStringLeteralEnd.bind(this),
+            doubleStringLeteral: this.doubleStringLeteral.bind(this),
+            escapedDoubleStringLeteral: this.escapedDoubleStringLeteral.bind(this),
+            maybeDoubleStringLeteralEnd: this.maybeDoubleStringLeteralEnd.bind(this)
         };
         this.currentState = this.stateMap.lineStart;
         this.buffer = [];
@@ -106,7 +112,7 @@
         if (ch === ' ') {
             this.buffer.push(ch);
             return 1;
-        } else if (ch === 'd') {
+        } else if (ch === 'd' || ch === 'D') {
             this.currentState = this.stateMap.maybeDelimiterDef;
             this.maybeDelimiterDefBuffer = [ch];
             this.maybeDelimiterDefCount = 0;
@@ -150,6 +156,14 @@
         } else if (ch === '\n') {
             this.buffer.push(ch);
             this.currentState = this.stateMap.lineStart;
+            return 1;
+        } else if (ch === '\'') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.singleStringLeteral;
+            return 1;
+        } else if (ch === '"') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.doubleStringLeteral;
             return 1;
         } else {
             this.buffer.push(ch);
@@ -342,6 +356,90 @@
             this.skipDelimiterCheck = true;
             return this.maybeDelimiterCount * -1;
         }
+    };
+
+    QueryDivider.prototype.singleStringLeteral = function(query, ch, pos) {
+        if (DEBUG) {
+            console.log("singleStringLeteral: " + ch);
+        }
+        if (ch === '\\') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.escapedSingleStringLeteral;
+            return 1;
+        } else if (ch === '\'') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.maybeSingleStringLeteralEnd;
+            return 1;
+        } else {
+            this.buffer.push(ch);
+            return 1;
+        }
+    };
+
+    QueryDivider.prototype.maybeSingleStringLeteralEnd = function(query, ch, pos) {
+        if (DEBUG) {
+            console.log("maybeSingleStringLeteralEnd: " + ch);
+        }
+        if (ch === '\'') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.singleStringLeteral;
+            return 1;
+        } else {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.query;
+            return 1;
+        }
+    };
+
+    QueryDivider.prototype.escapedSingleStringLeteral = function(query, ch, pos) {
+        if (DEBUG) {
+            console.log("escapedSingleStringLeteral: " + ch);
+        }
+        this.buffer.push(ch);
+        this.currentState = this.stateMap.singleStringLeteral;
+        return 1;
+    };
+
+    QueryDivider.prototype.doubleStringLeteral = function(query, ch, pos) {
+        if (DEBUG) {
+            console.log("doubleStringLeteral: " + ch);
+        }
+        if (ch === '\\') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.escapedDoubleStringLeteral;
+            return 1;
+        } else if (ch === '"') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.maybeDoubleStringLeteralEnd;
+            return 1;
+        } else {
+            this.buffer.push(ch);
+            return 1;
+        }
+    };
+
+    QueryDivider.prototype.maybeDoubleStringLeteralEnd = function(query, ch, pos) {
+        if (DEBUG) {
+            console.log("maybeDoubleStringLeteralEnd: " + ch);
+        }
+        if (ch === '"') {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.doubleStringLeteral;
+            return 1;
+        } else {
+            this.buffer.push(ch);
+            this.currentState = this.stateMap.query;
+            return 1;
+        }
+    };
+
+    QueryDivider.prototype.escapedDoubleStringLeteral = function(query, ch, pos) {
+        if (DEBUG) {
+            console.log("escapedDoubleStringLeteral: " + ch);
+        }
+        this.buffer.push(ch);
+        this.currentState = this.stateMap.doubleStringLeteral;
+        return 1;
     };
 
     QueryDivider.prototype.setDebug = function(debug) {
