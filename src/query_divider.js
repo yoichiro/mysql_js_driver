@@ -389,9 +389,9 @@
             this.currentState = this.stateMap.singleStringLeteral;
             return 1;
         } else {
-            this.buffer.push(ch);
+            // Re-evaluate as "query" state
             this.currentState = this.stateMap.query;
-            return 1;
+            return 0;
         }
     };
 
@@ -431,9 +431,9 @@
             this.currentState = this.stateMap.doubleStringLeteral;
             return 1;
         } else {
-            this.buffer.push(ch);
+            // Re-evaluate as "query" state
             this.currentState = this.stateMap.query;
-            return 1;
+            return 0;
         }
     };
 

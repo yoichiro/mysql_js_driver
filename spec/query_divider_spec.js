@@ -52,6 +52,22 @@ describe("MySQL.QueryDivider", function() {
         expect(true).toEqual(actual.success);
         expect("--\n").toEqual(actual.result[0]);
         expect("abc").toEqual(actual.result[1]);
-    })
+    });
+
+    it("can parse query including a single string leteral on last of line", function() {
+        var source = "select * from test where id = 'aaa';\nfoobar";
+        var actual = target.parse(source);
+        expect(true).toEqual(actual.success);
+        expect("select * from test where id = 'aaa'").toEqual(actual.result[0]);
+        expect("\nfoobar").toEqual(actual.result[1]);
+    });
+
+    it("can parse query including a double string leteral on last of line", function() {
+        var source = "select * from test where id = \"aaa\";\nfoobar";
+        var actual = target.parse(source);
+        expect(true).toEqual(actual.success);
+        expect("select * from test where id = \"aaa\"").toEqual(actual.result[0]);
+        expect("\nfoobar").toEqual(actual.result[1]);
+    });
 
 });
