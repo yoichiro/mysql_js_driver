@@ -1,9 +1,9 @@
-describe("MySQL.types", function() {
+describe("MySQL.Types", function() {
 
     var target;
 
     beforeEach(function() {
-        target = MySQL.types;
+        target = new MySQL.Types();
     });
 
     it("can create fixed length integer", function() {

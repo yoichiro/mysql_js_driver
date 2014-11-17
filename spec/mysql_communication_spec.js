@@ -1,9 +1,9 @@
-describe("MySQL.communication", function() {
+describe("MySQL.Communication", function() {
 
     var target;
 
     beforeEach(function() {
-        target = MySQL.communication;
+        target = new MySQL.Communication();
     });
 
     it("can connect", function() {

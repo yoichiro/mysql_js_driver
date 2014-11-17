@@ -1,9 +1,10 @@
-(function(binaryUtils) {
+(function(BinaryUtils) {
     "use strict";
 
     // Constructor
 
     var Types = function() {
+        this.binaryUtils = new MySQL.BinaryUtils();
     };
 
     // Public methods
@@ -18,7 +19,7 @@
     };
 
     Types.prototype.createLengthEncodedString = function(value) {
-        var buffer = binaryUtils.stringToArrayBuffer(value);
+        var buffer = this.binaryUtils.stringToArrayBuffer(value);
         var view = new Uint8Array(buffer);
         var length = view.length;
         var header = this.createLengthEncodedInteger(length);
@@ -84,7 +85,7 @@
     };
 
     Types.prototype.createNullEndString = function(value) {
-        var buffer = binaryUtils.stringToArrayBuffer(value);
+        var buffer = this.binaryUtils.stringToArrayBuffer(value);
         return this.createNullEndValue(buffer);
     };
 
@@ -96,14 +97,14 @@
             }
         }
         var targetBuffer = new Uint8Array(view.subarray(offset, pos));
-        var result = binaryUtils.arrayBufferToString(targetBuffer.buffer);
+        var result = this.binaryUtils.arrayBufferToString(targetBuffer.buffer);
         return {result: result, nextPosition: pos + 1};
     };
 
     Types.prototype.getFixedLengthString = function(buffer, offset, length) {
         var array = new Uint8Array(buffer);
         var targetBuffer = new Uint8Array(array.subarray(offset, offset + length));
-        var result = binaryUtils.arrayBufferToString(targetBuffer.buffer);
+        var result = this.binaryUtils.arrayBufferToString(targetBuffer.buffer);
         return result;
     };
 
@@ -158,6 +159,6 @@
 
     // Export
 
-    MySQL.types = new Types();
+    MySQL.Types = Types;
 
-})(MySQL.binaryUtils);
+})(MySQL.BinaryUtils);

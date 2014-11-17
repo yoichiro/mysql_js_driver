@@ -15,17 +15,18 @@ How to use
 <script type="text/javascript" src="mysql_js_driver_[VERSION_NUMBER].min.js"></script>
 ```
 
-(2) Set an implementation object to communicate with a socket like the following:
+(2) Create a client and set an implementation object to communicate with a socket like the following:
 
 ```javascript
+var client = new MySQL.Client();
 // Socket communication with Chrome Socket API (chrome.sockets.tcp)
-MySQL.communication.setSocketImpl(new MySQL.ChromeSocket2());
+client.setSocketImpl(new MySQL.ChromeSocket2());
 ```
 
 (3-1) Connect and login to MySQL server
 
 ```javascript
-MySQL.client.login(
+client.login(
   "YOUR_MYSQL_HOSTNAME", "YOUR_MYSQL_PORT_NUMBER",
   "YOUR_USERNAME", "YOUR_PASSWORD",
   function(initialHandshakeRequest, result) {
@@ -48,7 +49,7 @@ MySQL.client.login(
 
 ```javascript
 var ca = ...; // CA Certificate string in PEM format
-MySQL.client.loginWithSSL(
+client.loginWithSSL(
   "YOUR_MYSQL_HOSTNAME", "YOUR_MYSQL_PORT_NUMBER",
   "YOUR_USERNAME", "YOUR_PASSWORD",
   ca, true, // true means to check whether CN === host name.
@@ -72,7 +73,7 @@ MySQL.client.loginWithSSL(
 
 ```javascript
 var query = "SELECT * FROM foo WHERE...";
-MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
+client.query(query, function(columnDefinitions, resultsetRows) {
   for (var i = 0; i < columnDefinitions.length; i++) {
     var catalog = columnDefinitions[i].catalog;
     var schema = columnDefinitions[i].schema
@@ -103,7 +104,7 @@ MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
 
 ```javascript
 var query = "UPDATE foo SET bar = baz WHERE ...";
-MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
+client.query(query, function(columnDefinitions, resultsetRows) {
   // Never called.
 }, function(result) {
   var affectedRows = result.affectedRows;
@@ -120,7 +121,7 @@ MySQL.client.query(query, function(columnDefinitions, resultsetRows) {
 (6) Logout from MySQL server
 
 ```javascript
-MySQL.client.logout(function(result) {
+client.logout(function(result) {
   // do something...
 });
 ```

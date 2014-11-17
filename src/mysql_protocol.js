@@ -1,6 +1,6 @@
-(function(binaryUtils,
-          mySQLTypes,
-          hasher,
+(function(BinaryUtils,
+          MySQLTypes,
+          Hasher,
           QueryResult,
           OkResult,
           ErrResult,
@@ -13,27 +13,30 @@
     // Constructor
 
     var Protocol = function() {
+        this.binaryUtils = new BinaryUtils();
+        this.mySQLTypes = new MySQLTypes();
+        this.hasher = new Hasher();
     };
 
     // Private methods
 
     var _createOkResult = function(data, offset, dataLength) {
-        var affectedRowsResult = mySQLTypes.getLengthEncodedInteger(data, offset);
+        var affectedRowsResult = this.mySQLTypes.getLengthEncodedInteger(data, offset);
         var affectedRows = affectedRowsResult.result;
         var lastInsertIdResult =
-                mySQLTypes.getLengthEncodedInteger(
+                this.mySQLTypes.getLengthEncodedInteger(
                     data, affectedRowsResult.nextPosition);
         var lastInsertId = lastInsertIdResult.result;
         var statusFlags =
-                mySQLTypes.getFixedLengthInteger(
+                this.mySQLTypes.getFixedLengthInteger(
                     data, lastInsertIdResult.nextPosition, 2);
         var warnings =
-                mySQLTypes.getFixedLengthInteger(
+                this.mySQLTypes.getFixedLengthInteger(
                     data, lastInsertIdResult.nextPosition + 2, 2);
         var info = "";
         if (dataLength > lastInsertIdResult.nextPosition + 4) {
             var length = dataLength - lastInsertIdResult.nextPosition + 4;
-            info = mySQLTypes.getFixedLengthString(
+            info = this.mySQLTypes.getFixedLengthString(
                 data, lastInsertIdResult.nextPosition + 4, length);
         }
         return new OkResult(
@@ -41,12 +44,12 @@
     };
 
     var _createErrResult = function(data, offset, dataLength) {
-        var errorCode = mySQLTypes.getFixedLengthInteger(data, offset, 2);
-        var sqlStateMarker = mySQLTypes.getFixedLengthString(data, offset + 2, 1);
-        var sqlState = mySQLTypes.getFixedLengthString(data, offset + 3, 5);
+        var errorCode = this.mySQLTypes.getFixedLengthInteger(data, offset, 2);
+        var sqlStateMarker = this.mySQLTypes.getFixedLengthString(data, offset + 2, 1);
+        var sqlState = this.mySQLTypes.getFixedLengthString(data, offset + 3, 5);
         var errorMessageLength = dataLength - offset - 8;
         var errorMessage =
-                mySQLTypes.getFixedLengthString(
+                this.mySQLTypes.getFixedLengthString(
                     data, offset + 8, errorMessageLength);
         return new ErrResult(errorCode, sqlStateMarker, sqlState, errorMessage);
     };
@@ -61,18 +64,18 @@
     };
 
     Protocol.prototype.generateQueryRequest = function(queryString) {
-        var buffer = binaryUtils.stringToArrayBuffer(queryString);
+        var buffer = this.binaryUtils.stringToArrayBuffer(queryString);
         var view = new Uint8Array(buffer);
-        var array = binaryUtils.createUint8Array(1 + view.length);
+        var array = this.binaryUtils.createUint8Array(1 + view.length);
         array[0] = 0x03;
         array.set(view, 1);
         return array;
     };
 
     Protocol.prototype.generateInitDBRequest = function(schemaName) {
-        var schemaNameBuffer = binaryUtils.stringToArrayBuffer(schemaName);
+        var schemaNameBuffer = this.binaryUtils.stringToArrayBuffer(schemaName);
         var schemaNameArray = new Uint8Array(schemaNameBuffer);
-        var resultArray = binaryUtils.createUint8Array(1 + schemaNameArray.length);
+        var resultArray = this.binaryUtils.createUint8Array(1 + schemaNameArray.length);
         resultArray[0] = 0x02;
         resultArray.set(schemaNameArray, 1);
         return resultArray;
@@ -90,11 +93,11 @@
             capabilityFlagsValue |= 0x20000; // CLIENT_MULTI_RESULTS
         }
         var capabilityFlags =
-                mySQLTypes.createFixedLengthInteger(capabilityFlagsValue, 4);
+                this.mySQLTypes.createFixedLengthInteger(capabilityFlagsValue, 4);
         var maxPacketSize =
-                mySQLTypes.createFixedLengthInteger(0xFFFFFF, 4); // About 16MB
+                this.mySQLTypes.createFixedLengthInteger(0xFFFFFF, 4); // About 16MB
         var characterSet =
-                mySQLTypes.createLengthEncodedInteger(0x21); // utf8_general_ci
+                this.mySQLTypes.createLengthEncodedInteger(0x21); // utf8_general_ci
         var length =
                 capabilityFlags.length +
                 maxPacketSize.length +
@@ -123,21 +126,21 @@
             capabilityFlagsValue |= 0x20000; // CLIENT_MULTI_RESULTS
         }
         var capabilityFlags =
-                mySQLTypes.createFixedLengthInteger(capabilityFlagsValue, 4);
+                this.mySQLTypes.createFixedLengthInteger(capabilityFlagsValue, 4);
         var maxPacketSize =
-                mySQLTypes.createFixedLengthInteger(0xFFFFFF, 4); // About 16MB
+                this.mySQLTypes.createFixedLengthInteger(0xFFFFFF, 4); // About 16MB
         var characterSet =
-                mySQLTypes.createLengthEncodedInteger(0x21); // utf8_general_ci
-        var usernameArray = mySQLTypes.createNullEndString(username);
+                this.mySQLTypes.createLengthEncodedInteger(0x21); // utf8_general_ci
+        var usernameArray = this.mySQLTypes.createNullEndString(username);
         var passwordHashLength;
         if (passwordHash === null) {
             passwordHashLength = 0;
         } else {
             passwordHashLength =
-                mySQLTypes.createLengthEncodedInteger(passwordHash.length);
+                this.mySQLTypes.createLengthEncodedInteger(passwordHash.length);
         }
         var authPluginName =
-                mySQLTypes.createNullEndString(initialHandshakeRequest.authPluginName);
+                this.mySQLTypes.createNullEndString(initialHandshakeRequest.authPluginName);
         var length =
                 capabilityFlags.length +
                 maxPacketSize.length +
@@ -177,8 +180,8 @@
 
     Protocol.prototype.generatePasswordHash = function(
         initialHandshakeRequest, passwordString) {
-        var password1Array = hasher.sha1ToUint8Array(passwordString);
-        var password2Array = hasher.sha1Uint8ArrayToUint8Array(password1Array);
+        var password1Array = this.hasher.sha1ToUint8Array(passwordString);
+        var password2Array = this.hasher.sha1Uint8ArrayToUint8Array(password1Array);
         var authPluginDataPart1 = initialHandshakeRequest.authPluginDataPart1;
         var authPluginDataPart2 = initialHandshakeRequest.authPluginDataPart2;
         var sourceBuffer = new ArrayBuffer(authPluginDataPart1.length +
@@ -189,7 +192,7 @@
         sourceView.set(authPluginDataPart2, authPluginDataPart1.length);
         sourceView.set(password2Array,
                        authPluginDataPart1.length + authPluginDataPart2.length);
-        var hashedSourceArray = hasher.sha1Uint8ArrayToUint8Array(sourceView);
+        var hashedSourceArray = this.hasher.sha1Uint8ArrayToUint8Array(sourceView);
         var result = new Uint8Array(password1Array.length);
         for (var i = 0; i < result.length; i++) {
             result[i] = password1Array[i] ^ hashedSourceArray[i];
@@ -198,14 +201,14 @@
     };
 
     Protocol.prototype.generatePingRequest = function() {
-        var array = binaryUtils.createUint8Array(1);
+        var array = this.binaryUtils.createUint8Array(1);
         array[0] = 0x0e;
         return array;
     };
 
     Protocol.prototype.parseQueryResultPacket = function(packet, callback) {
         var data = packet.data;
-        var header = mySQLTypes.getFixedLengthInteger(data, 0, 1);
+        var header = this.mySQLTypes.getFixedLengthInteger(data, 0, 1);
         if (header === 0) {
             // No result set
             var okResult = _createOkResult.call(
@@ -218,7 +221,7 @@
             callback(errResult);
         } else {
             // Result set exists
-            var columnCountResult = mySQLTypes.getLengthEncodedInteger(data, 0);
+            var columnCountResult = this.mySQLTypes.getLengthEncodedInteger(data, 0);
             var queryResult = new QueryResult(columnCountResult.result);
             callback(queryResult);
         }
@@ -226,7 +229,7 @@
 
     Protocol.prototype.parseOkErrResultPacket = function(packet) {
         var data = packet.data;
-        var header = mySQLTypes.getFixedLengthInteger(data, 0, 1);
+        var header = this.mySQLTypes.getFixedLengthInteger(data, 0, 1);
         if (header === 0) {
             // Succeeded
             return _createOkResult.call(
@@ -243,10 +246,10 @@
 
     Protocol.prototype.parseEofPacket = function(packet) {
         var data = packet.data;
-        var header = mySQLTypes.getFixedLengthInteger(data, 0, 1);
+        var header = this.mySQLTypes.getFixedLengthInteger(data, 0, 1);
         if (header == 0xFE) {
-            var warningCount = mySQLTypes.getFixedLengthInteger(data, 1, 2);
-            var statusFlags = mySQLTypes.getFixedLengthInteger(data, 3, 2);
+            var warningCount = this.mySQLTypes.getFixedLengthInteger(data, 1, 2);
+            var statusFlags = this.mySQLTypes.getFixedLengthInteger(data, 3, 2);
             return new EofResult(warningCount, statusFlags);
         } else {
             // TODO: Unknown
@@ -257,26 +260,26 @@
     Protocol.prototype.parseInitialHandshakePacket = function(packet) {
         var data = packet.data;
         var offset = 0;
-        var protocolVersion = mySQLTypes.getFixedLengthInteger(data, offset++, 1);
-        var serverVersionResult = mySQLTypes.getNullEndString(data, offset);
+        var protocolVersion = this.mySQLTypes.getFixedLengthInteger(data, offset++, 1);
+        var serverVersionResult = this.mySQLTypes.getNullEndString(data, offset);
         var serverVersion = serverVersionResult.result;
         offset = serverVersionResult.nextPosition;
-        var connectionId = mySQLTypes.getFixedLengthInteger(data, offset, 4);
+        var connectionId = this.mySQLTypes.getFixedLengthInteger(data, offset, 4);
         offset += 4;
         var authPluginDataPart1 = new Uint8Array(data, offset, 8);
         offset += 8 + 1; // Skip 1 byte
-        var capabilityFlag1 = mySQLTypes.getFixedLengthInteger(data, offset, 2);
+        var capabilityFlag1 = this.mySQLTypes.getFixedLengthInteger(data, offset, 2);
         offset += 2;
-        var characterSet = mySQLTypes.getFixedLengthInteger(data, offset++, 1);
-        var statusFlags = mySQLTypes.getFixedLengthInteger(data, offset, 2);
+        var characterSet = this.mySQLTypes.getFixedLengthInteger(data, offset++, 1);
+        var statusFlags = this.mySQLTypes.getFixedLengthInteger(data, offset, 2);
         offset += 2;
-        var capabilityFlag2 = mySQLTypes.getFixedLengthInteger(data, offset, 2);
+        var capabilityFlag2 = this.mySQLTypes.getFixedLengthInteger(data, offset, 2);
         offset += 2;
-        var authPluginDataLen = mySQLTypes.getFixedLengthInteger(data, offset++, 1);
+        var authPluginDataLen = this.mySQLTypes.getFixedLengthInteger(data, offset++, 1);
         offset += 10; // Skip 10 bytes
         var authPluginDataPart2 = new Uint8Array(data, offset, 12);
         offset += 12 + 1; // Skip 1 byte
-        var authPluginNameResult = mySQLTypes.getNullEndString(data, offset);
+        var authPluginNameResult = this.mySQLTypes.getNullEndString(data, offset);
         var authPluginName = authPluginNameResult.result;
         return new InitialHandshakeRequest(protocolVersion,
                                            serverVersion,
@@ -293,29 +296,29 @@
 
     Protocol.prototype.parseColumnDefinitionPacket = function(packet) {
         var data = packet.data;
-        var catalogResult = mySQLTypes.getLengthEncodedString(data, 0);
-        var schemaResult = mySQLTypes.getLengthEncodedString(
+        var catalogResult = this.mySQLTypes.getLengthEncodedString(data, 0);
+        var schemaResult = this.mySQLTypes.getLengthEncodedString(
             data, catalogResult.nextPosition);
-        var tableResult = mySQLTypes.getLengthEncodedString(
+        var tableResult = this.mySQLTypes.getLengthEncodedString(
             data, schemaResult.nextPosition);
-        var orgTableResult = mySQLTypes.getLengthEncodedString(
+        var orgTableResult = this.mySQLTypes.getLengthEncodedString(
             data, tableResult.nextPosition);
-        var nameResult = mySQLTypes.getLengthEncodedString(
+        var nameResult = this.mySQLTypes.getLengthEncodedString(
             data, orgTableResult.nextPosition);
-        var orgNameResult = mySQLTypes.getLengthEncodedString(
+        var orgNameResult = this.mySQLTypes.getLengthEncodedString(
             data, nameResult.nextPosition);
-        var nextLengthResult = mySQLTypes.getLengthEncodedInteger(
+        var nextLengthResult = this.mySQLTypes.getLengthEncodedInteger(
             data, orgNameResult.nextPosition);
         var offset = nextLengthResult.nextPosition;
-        var characterSet = mySQLTypes.getFixedLengthInteger(data, offset, 2);
+        var characterSet = this.mySQLTypes.getFixedLengthInteger(data, offset, 2);
         offset += 2;
-        var columnLength = mySQLTypes.getFixedLengthInteger(data, offset, 4);
+        var columnLength = this.mySQLTypes.getFixedLengthInteger(data, offset, 4);
         offset += 4;
-        var columnType = mySQLTypes.getFixedLengthInteger(data, offset, 1);
+        var columnType = this.mySQLTypes.getFixedLengthInteger(data, offset, 1);
         offset += 1;
-        var flags = mySQLTypes.getFixedLengthInteger(data, offset, 2);
+        var flags = this.mySQLTypes.getFixedLengthInteger(data, offset, 2);
         offset += 2;
-        var decimals = mySQLTypes.getFixedLengthInteger(data, offset, 1);
+        var decimals = this.mySQLTypes.getFixedLengthInteger(data, offset, 1);
         return new ColumnDefinition(catalogResult.result,
                                     schemaResult.result,
                                     tableResult.result,
@@ -335,7 +338,7 @@
         var offset = 0;
         var values = [];
         while(offset < packet.dataLength) {
-            var valueResult = mySQLTypes.getLengthEncodedString(data, offset);
+            var valueResult = this.mySQLTypes.getLengthEncodedString(data, offset);
             values.push(valueResult.result);
             offset = valueResult.nextPosition;
         }
@@ -345,17 +348,17 @@
     Protocol.prototype.parseStatisticsResultPacket = function(packet) {
         var data = packet.data;
         var dataLength = packet.dataLength;
-        var result = mySQLTypes.getFixedLengthString(data, 0, dataLength);
+        var result = this.mySQLTypes.getFixedLengthString(data, 0, dataLength);
         return result;
     };
 
     // Export
 
-    MySQL.protocol = new Protocol();
+    MySQL.Protocol = Protocol;
 
-})(MySQL.binaryUtils,
-   MySQL.types,
-   MySQL.hasher,
+})(MySQL.BinaryUtils,
+   MySQL.Types,
+   MySQL.Hasher,
    MySQL.QueryResult,
    MySQL.OkResult,
    MySQL.ErrResult,

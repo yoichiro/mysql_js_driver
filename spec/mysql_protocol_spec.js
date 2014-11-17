@@ -1,9 +1,9 @@
-describe("MySQL.protocol", function() {
+describe("MySQL.Protocol", function() {
 
     var target;
 
     beforeEach(function() {
-        target = MySQL.protocol;
+        target = new MySQL.Protocol();
     });
 
     it("can generate statistics request", function() {

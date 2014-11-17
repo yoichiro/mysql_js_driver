@@ -43,6 +43,6 @@
 
     // Export
 
-    MySQL.hasher = new Hasher();
+    MySQL.Hasher = Hasher;
 
 })();

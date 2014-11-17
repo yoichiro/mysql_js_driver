@@ -1,9 +1,10 @@
-(function(Packet, mySQLTypes) {
+(function(Packet, MySQLTypes) {
     "use strict";
 
     // Constructor
 
     var Communication = function() {
+        this.mySQLTypes = new MySQLTypes();
         this.nextSequenceNumber = 0;
         this.socketImpl = null;
     };
@@ -26,7 +27,7 @@
 
     var _readFixedLongValue = function(length, callback, fatalCallback) {
         _read.call(this, length, function(readInfo) {
-            var result = mySQLTypes.getFixedLengthInteger(readInfo.data, 0, length);
+            var result = this.mySQLTypes.getFixedLengthInteger(readInfo.data, 0, length);
             callback(result);
         }.bind(this), fatalCallback);
     };
@@ -95,7 +96,7 @@
 
     // Export
 
-    MySQL.communication = new Communication();
+    MySQL.Communication = Communication;
 
 
-})(MySQL.Packet, MySQL.types);
+})(MySQL.Packet, MySQL.Types);
