@@ -195,6 +195,6 @@
 
     // Export
 
-    MySQL.networkErrorCode = new NetworkErrorCode();
+    MySQL.NetworkErrorCode = NetworkErrorCode;
 
 })();

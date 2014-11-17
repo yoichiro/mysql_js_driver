@@ -32,6 +32,6 @@
 
     // Export
 
-    MySQL.binaryUtils = new BinaryUtils();
+    MySQL.BinaryUtils = BinaryUtils;
 
 })();

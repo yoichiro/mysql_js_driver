@@ -1,9 +1,9 @@
-describe("MySQL.binaryUtils", function() {
+describe("MySQL.BinaryUtils", function() {
 
     var target;
 
     beforeEach(function() {
-        target = MySQL.binaryUtils;
+        target = new MySQL.BinaryUtils();
     });
 
     it("can create Uint8Array", function() {

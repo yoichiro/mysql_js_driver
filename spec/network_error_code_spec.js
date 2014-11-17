@@ -1,9 +1,9 @@
-describe("MySQL.networkErrorCode", function() {
+describe("MySQL.NetworkErrorCode", function() {
 
     var target;
 
     beforeEach(function() {
-        target = MySQL.networkErrorCode;
+        target = new MySQL.NetworkErrorCode;
     });
 
     it("can retrieve error message from error code", function() {

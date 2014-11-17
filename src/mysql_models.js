@@ -1,9 +1,10 @@
-(function(mySQLTypes) {
+(function(MySQLTypes) {
     "use strict";
 
     // Constructor
 
     var Packet = function(newSequenceNumber, buffer) {
+        this.mySQLTypes = new MySQLTypes();
         this.sequenceNumber = newSequenceNumber;
         this.data = buffer;
         this.dataLength = buffer.byteLength;
@@ -13,7 +14,7 @@
 
     Packet.prototype.getArrayBuffer = function() {
         var result = new ArrayBuffer(4 + this.dataLength);
-        var dataLengthArray = mySQLTypes.createFixedLengthInteger(this.dataLength, 3);
+        var dataLengthArray = this.mySQLTypes.createFixedLengthInteger(this.dataLength, 3);
         var view = new Uint8Array(result);
         view.set(dataLengthArray, 0);
         view[3] = this.sequenceNumber;
@@ -25,7 +26,7 @@
 
     MySQL.Packet = Packet;
 
-})(MySQL.types);
+})(MySQL.Types);
 
 (function() {
     "use strict";
