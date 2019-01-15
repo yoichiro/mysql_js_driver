@@ -10,6 +10,39 @@
         this.dataLength = buffer.byteLength;
     };
 
+    // Private methods
+
+    Packet.prototype._outputUint8Array = function(array) {
+        var lines = "";
+        var out = "";
+        var ascii = "";
+        for (var i = 0; i < array.length; i++) {
+            // out += String.fromCharCode(array[i]);
+            var value = (Number(array[i])).toString(16).toUpperCase();
+            if (value.length === 1) {
+                value = "0" + value;
+            }
+            out += value;
+            if (i % 2 !== 0) {
+                out += " ";
+            }
+            if (0x20 <= array[i] && array[i] <= 0x7e) {
+                ascii += String.fromCharCode(array[i]);
+            } else {
+                ascii += ".";
+            }
+            if (((i + 1) % 16) === 0) {
+                lines += out + " " + ascii + "\n";
+                out = "";
+                ascii = "";
+            }
+        }
+        if (out) {
+            lines += out + " " + ascii + "\n";
+        }
+        console.log(lines);
+    };
+
     // Public methods
 
     Packet.prototype.getArrayBuffer = function() {
@@ -20,6 +53,12 @@
         view[3] = this.sequenceNumber;
         view.set(new Uint8Array(this.data), 4);
         return result;
+    };
+
+    Packet.prototype.outputForDebug = function() {
+        console.log("sequenceNumber:", this.sequenceNumber);
+        console.log("dataLength:", this.dataLength);
+        this._outputUint8Array(new Uint8Array(this.data));
     };
 
     // Export
@@ -110,6 +149,10 @@
         return true;
     };
 
+    OkResult.prototype.isAuthSwitchRequest = function() {
+        return false;
+    };
+
     OkResult.prototype.hasResultset = function() {
         return false;
     };
@@ -189,8 +232,48 @@
         return false;
     };
 
+    ErrResult.prototype.isAuthSwitchRequest = function() {
+        return false;
+    };
+
     // Export
     MySQL.ErrResult = ErrResult;
+
+})();
+
+(function() {
+    "use strict";
+
+    // Constructor
+
+    var AuthSwitchRequest = function(newAuthMethodName,
+                                     newAuthMethodData) {
+        this.authMethodName = newAuthMethodName;
+        this.authMethodData = newAuthMethodData;
+    };
+
+    // Public methods
+
+    AuthSwitchRequest.prototype.isAuthSwitchRequest = function() {
+        return true;
+    };
+
+    // Export
+    MySQL.AuthSwitchRequest = AuthSwitchRequest;
+
+})();
+
+(function() {
+    "use strict";
+
+    // Constructor
+
+    var AuthSwitchResponse = function(newData) {
+        this.data = newData;
+    };
+
+    // Export
+    MySQL.AuthSwitchResponse = AuthSwitchResponse;
 
 })();
 
