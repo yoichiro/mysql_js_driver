@@ -117,6 +117,21 @@ describe("MySQL.Protocol", function() {
         }
     });
 
+    it ("can generate password hash for auth switch", function() {
+        var password = "pass";
+        var authMethodData = new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x05, 0x06]);
+        var actual = target.generatePasswordHashForAuthSwitch(
+            authMethodData, password);
+        var expected =
+                [0x8c, 0x9b, 0xe0, 0x7d, 0x9d,
+                 0xb4, 0x78, 0xc4, 0xd7, 0x32,
+                 0xb9, 0x19, 0x61, 0x7d, 0x60,
+                 0xf6, 0x0a, 0x3f, 0xea, 0xbc];
+        for (var i = 0; i < actual.length; i++) {
+            expect(expected[i]).toEqual(actual[i]);
+        }
+    });
+
     it ("can generate ping request", function() {
         var actual = target.generatePingRequest();
         var expected = [0x0e];
@@ -281,6 +296,32 @@ describe("MySQL.Protocol", function() {
             expect(0x45).toEqual(actual.columnType);
             expect(0x6587).toEqual(actual.flags);
             expect(0x56).toEqual(actual.decimals);
+        });
+    });
+
+    it ("can parse auth switch request packet", function() {
+        var data = [
+            0xFE, 0x6D, 0x79, 0x73, 0x71,
+            0x6C, 0x5F, 0x6E, 0x61, 0x74,
+            0x69, 0x76, 0x65, 0x5F, 0x70,
+            0x61, 0x73, 0x73, 0x77, 0x6F,
+            0x72, 0x64, 0x00, 0x43, 0x08,
+            0x40, 0x5C, 0x27, 0x41, 0x5E,
+            0x0A, 0x44, 0x1F, 0x01, 0x7F,
+            0x0B, 0x7A, 0x65, 0x51, 0x0B,
+            0x50, 0x39, 0x30, 0x00];
+        var array = new Uint8Array(data, 0);
+        var packet = new MySQL.Packet(2, array.buffer);
+        target.parseOkErrResultPacket(packet, function(actual) {
+            expect("mysql_native_password").toEqual(actual.authMethodName);
+            var expected = [
+                0x43, 0x08, 0x40, 0x5C, 0x27,
+                0x41, 0x5E, 0x0A, 0x44, 0x1F,
+                0x01, 0x7F, 0x0B, 0x7A, 0x65,
+                0x51, 0x0B, 0x50, 0x39, 0x30];
+            for (var i = 0; i < actual.authMethodData.length; i++) {
+                expect(expected[i]).toEqual(actual.authMethodData[i]);
+            }
         });
     });
 

@@ -38,7 +38,23 @@
         this.mySQLCommunication.writePacket(handshakeResponsePacket, function(writeInfo) {
             this.mySQLCommunication.readPacket(function(packet) {
                 var result = this.mySQLProtocol.parseOkErrResultPacket(packet);
-                callback(initialHandshakeRequest, result);
+                if (result.isAuthSwitchRequest()) {
+                    passwordHash =
+                            this.mySQLProtocol.generatePasswordHashForAuthSwitch(
+                                result.authMethodData, password);
+                    var authSwitchResponse =
+                            this.mySQLProtocol.generateAuthSwitchResponse(passwordHash);
+                    var authSwitchResponsePacket =
+                                this.mySQLCommunication.createPacket(authSwitchResponse.buffer);
+                    this.mySQLCommunication.writePacket(authSwitchResponsePacket, function(packet) {
+                        this.mySQLCommunication.readPacket(function(packet) {
+                            result = this.mySQLProtocol.parseOkErrResultPacket(packet);
+                            callback(initialHandshakeRequest, result);
+                        }.bind(this), fatalCallback);
+                    }.bind(this), fatalCallback);
+                } else {
+                    callback(initialHandshakeRequest, result);
+                }
             }.bind(this), fatalCallback);
         }.bind(this), fatalCallback);
     };

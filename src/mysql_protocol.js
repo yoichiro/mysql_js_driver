@@ -7,7 +7,8 @@
           EofResult,
           InitialHandshakeRequest,
           ColumnDefinition,
-          ResultsetRow) {
+          ResultsetRow,
+          AuthSwitchRequest) {
     "use strict";
 
     // Constructor
@@ -52,6 +53,14 @@
                 this.mySQLTypes.getFixedLengthString(
                     data, offset + 8, errorMessageLength);
         return new ErrResult(errorCode, sqlStateMarker, sqlState, errorMessage);
+    };
+
+    var _createAuthSwitchRequest = function(data, offset, dataLength) {
+        var authMethodNameResult = this.mySQLTypes.getNullEndString(data, offset);
+        var authMethodName = authMethodNameResult.result;
+        offset = authMethodNameResult.nextPosition;
+        var authMethodData = new Uint8Array(data, offset, dataLength - offset - 1);
+        return new AuthSwitchRequest(authMethodName, authMethodData);
     };
 
     // Public methods
@@ -113,6 +122,10 @@
         array.set(characterSet, offset);
         return array;
     };
+
+    Protocol.prototype.generateAuthSwitchResponse = function(passwordHash) {
+        return passwordHash;
+    }
 
     Protocol.prototype.generateHandshakeResponse = function(
         initialHandshakeRequest, username, passwordHash, multiStatements) {
@@ -200,6 +213,22 @@
         return result;
     };
 
+    Protocol.prototype.generatePasswordHashForAuthSwitch = function(
+        authMethodData, passwordString) {
+        var password1Array = this.hasher.sha1ToUint8Array(passwordString);
+        var password2Array = this.hasher.sha1Uint8ArrayToUint8Array(password1Array);
+        var sourceBuffer = new ArrayBuffer(authMethodData.length + password2Array.length);
+        var sourceView = new Uint8Array(sourceBuffer);
+        sourceView.set(authMethodData, 0);
+        sourceView.set(password2Array, authMethodData.length);
+        var hashedSourceArray = this.hasher.sha1Uint8ArrayToUint8Array(sourceView);
+        var result = new Uint8Array(password1Array.length);
+        for (var i = 0; i < result.length; i++) {
+            result[i] = password1Array[i] ^ hashedSourceArray[i];
+        }
+        return result;
+    };
+
     Protocol.prototype.generatePingRequest = function() {
         var array = this.binaryUtils.createUint8Array(1);
         array[0] = 0x0e;
@@ -237,6 +266,10 @@
         } else if (header == 0xFF) {
             // Error
             return _createErrResult.call(
+                this, data, 1, packet.dataLength);
+        } else if (header == 0xFE) {
+            // AuthSwitchRequest
+            return _createAuthSwitchRequest.call(
                 this, data, 1, packet.dataLength);
         } else {
             // TODO: Unknown
@@ -365,4 +398,5 @@
    MySQL.EofResult,
    MySQL.InitialHandshakeRequest,
    MySQL.ColumnDefinition,
-   MySQL.ResultsetRow);
+   MySQL.ResultsetRow,
+   MySQL.AuthSwitchRequest);
