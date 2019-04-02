@@ -4,7 +4,8 @@
   "description": "This project provides you MySQL Driver written by JavaScript.",
   "main": "Gruntfile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "grunt",
+    "test": "grunt jasmine"
   },
   "author": "Yoichiro Tanaka",
   "license": "Apache License 2.0",
